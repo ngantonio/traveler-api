@@ -1,6 +1,8 @@
-const express = require("express");
-const connectDB = require('./config/db');
-const cors = require('cors');
+import express, {json} from "express";
+import connectDB from './config/db.js';
+import cors from 'cors';
+
+import postRoutes from './src/routes/Post.routes.js'
 
 // create server
 const api = express();
@@ -13,10 +15,10 @@ connectDB();
 api.use(cors());
 
 // configure middlewares
-api.use(express.json({ extended: true }))
+api.use(json({ limit: "30mb", extended: true }))
 
 // Create and configure routes and Endpoints 
-
+api.use('/api/posts', postRoutes)
 
 // server listenind
 api.listen(PORT, () => {

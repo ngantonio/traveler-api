@@ -12,6 +12,7 @@
     "type": "git",
     "url": "git+ssh://git@github.com/ngantonio/traveler-api.git"
   },
+  "type": "module",
   "keywords": [
     "traveler",
     "api",
