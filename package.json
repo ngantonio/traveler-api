@@ -1,0 +1,41 @@
+{
+  "name": "traveler-api",
+  "version": "1.0.0",
+  "description": "a REST API with mongodb, and sockets for the travelers notes web application",
+  "main": "index.js",
+  "scripts": {
+    "start": "node .",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/ngantonio/traveler-api.git"
+  },
+  "keywords": [
+    "traveler",
+    "api",
+    "notes",
+    "socket",
+    "mongo",
+    "travel"
+  ],
+  "author": "Gabriel Antonio Oliveira",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ngantonio/traveler-api/issues"
+  },
+  "homepage": "https://github.com/ngantonio/traveler-api#readme",
+  "devDependencies": {
+    "nodemon": "^2.0.7"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^10.0.0",
+    "express": "^4.17.1",
+    "express-validator": "^6.12.0",
+    "jsonwebtoken": "^8.5.1",
+    "mongoose": "^5.12.14"
+  }
+}
