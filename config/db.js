@@ -7,7 +7,8 @@ export default function connectDB() {
   mongoose.connect(process.env.DB_MONGO, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
-    useFindAndModify: false
+    useFindAndModify: false,
+    useCreateIndex: true
   }).then((success) => {
     console.log("Database connected Sucessfully");
     
