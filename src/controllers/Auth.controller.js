@@ -30,7 +30,14 @@ export const login = async (req, res) => {
       expiresIn: "1h", // expires in 1hour  
     },(error, token)=> {
       if (error) throw error;
-        return res.status(200).json({"ok": true, "user": userExist, token})
+      // porque el front necesita name en lugar de firstName, por googleAuth
+      let userSend = {
+        "name": userExist.firstName,
+        "lastName": userExist.lastName,
+        "email": userExist.email,
+        "created_at": userExist.created_at
+      }
+      return res.status(200).json({"ok": true, "result": userSend, token})
     })
 
   } catch (error) {
@@ -72,7 +79,15 @@ export const register = async (req, res) => {
       expiresIn: "1h", // expires in 1hour  
     },(error, token)=> {
       if (error) throw error;
-        res.status(200).json({"ok": true, "user": newUser, token})
+
+      // porque el front necesita name en lugar de firstName, por googleAuth
+      let userSend = {
+        "name": newUser.firstName,
+        "lastName": newUser.lastName,
+        "email": newUser.email,
+        "created_at": newUser.created_at
+      }
+      return res.status(200).json({"ok": true, "result": userSend, token})
     })
 
     

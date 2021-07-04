@@ -31,15 +31,14 @@ export const createNote = async (req, res) => {
 export const updateNote = async (req, res) => {
 
    const { id } = req.params;
-   const { title, message, creator, selectedFile, likeCount, tags } = req.body;
+   const { title, message, creator, selectedFile, tags } = req.body;
     
    //if (!mongoose.Types.ObjectId.isValid(id)) return res.status(404).json({ ok: false, msg: 'Id not valid' });
 
    if (!title || !message || !creator || !selectedFile ) return res.status(400).json({ "ok": false, 'msg': 'required fields are missing' })
    if (title === '' || message === '' || creator === '' || selectedFile === '') return res.status(400).json({ "ok": false, 'msg': 'empty fields were sent' })
    
-   //let recievedNote = { creator, title, message, likeCount, tags, selectedFile};
-   const newNote = { creator, title, message, tags, likeCount, selectedFile, _id: id };
+   const newNote = { creator, title, message, tags, selectedFile, _id: id };
    try {
       // check if the note exists
       let note = await TravelNote.findById(id)
@@ -55,6 +54,40 @@ export const updateNote = async (req, res) => {
       return res.status(409).json({ ok: false, msg: 'error to update note', error: error.message });
    }
 };
+
+export const likeNote = async (req, res) => {
+
+   const { id } = req.params;
+   
+   if (!mongoose.Types.ObjectId.isValid(id)) return res.status(404).json({ ok: false, msg: 'Id not valid' });
+   if (!req.userLogger._id) return res.status(404).json({ ok: false, msg: "Unauthorized" });
+   
+   try {
+      // check if the note exists
+      let note = await TravelNote.findById(id)
+      if (!note) return res.status(404).json({ "ok": false, "msg": "note not found" })
+      
+      // check like logic
+      const index = note.likes.findIndex((id) => id === String(req.userLogger._id));
+      if (index === -1) {
+         // like the note
+         note.likes.push(req.userLogger._id)
+      } else {
+         // dislike a post
+         note.likes = note.likes.filter((id) => id !== String(req.userLogger._id))
+      }
+
+      // update Note
+      await TravelNote.findByIdAndUpdate(id, note, { new: true });
+      return res.status(201).json({ok: true, msg: "liked"});
+     
+   } catch (error) {
+      console.log("entra al error");
+      console.log(error);
+      return res.status(409).json({ ok: false, msg: 'error to update note', error: error.message });
+   }
+};
+
 
 export const deleteNote = async (req, res) => {
    const { id } = req.params;
