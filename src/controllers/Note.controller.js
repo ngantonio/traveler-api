@@ -33,22 +33,25 @@ export const updateNote = async (req, res) => {
    const { id } = req.params;
    const { title, message, creator, selectedFile, likeCount, tags } = req.body;
     
-   if (!mongoose.Types.ObjectId.isValid(id)) return res.status(404).json({ ok: false, msg: 'Id not valid' });
+   //if (!mongoose.Types.ObjectId.isValid(id)) return res.status(404).json({ ok: false, msg: 'Id not valid' });
 
    if (!title || !message || !creator || !selectedFile ) return res.status(400).json({ "ok": false, 'msg': 'required fields are missing' })
    if (title === '' || message === '' || creator === '' || selectedFile === '') return res.status(400).json({ "ok": false, 'msg': 'empty fields were sent' })
    
-   let recievedNote = { creator, title, message, likeCount, tags, selectedFile};
+   //let recievedNote = { creator, title, message, likeCount, tags, selectedFile};
+   const newNote = { creator, title, message, tags, likeCount, selectedFile, _id: id };
    try {
       // check if the note exists
-      let note = await ProjectModel.findById(id)
-      if(!note) return res.status(404).json({"ok": false, "msg": "note not found"})
-
+      let note = await TravelNote.findById(id)
+      if (!note) return res.status(404).json({ "ok": false, "msg": "note not found" })
+      
       // update Note
-      updatedNote = await TravelNote.findByIdAndUpdate({_id: id}, recievedNote, { new: true });
-      return res.status(201).json({ok: true, note: updatedNote});
+      await TravelNote.findByIdAndUpdate(id, newNote, { new: true });
+      return res.status(201).json({ok: true, note: newNote});
      
    } catch (error) {
+      console.log("entra al error");
+      console.log(error);
       return res.status(409).json({ ok: false, msg: 'error to update note', error: error.message });
    }
 };
@@ -60,7 +63,7 @@ export const deleteNote = async (req, res) => {
 
    try {
       // check if the note exists
-      let note = await ProjectModel.findById(id)
+      let note = await TravelNote.findById(id)
       if (!note) return res.status(404).json({ "ok": false, "msg": "note not found" })
       
       await TravelNote.findByIdAndRemove(id);
