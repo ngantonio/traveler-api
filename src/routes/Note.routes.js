@@ -7,7 +7,7 @@ import authMiddleware from '../middlewares/auth.js'
 router.get('/', getNotes);
 router.post('/', authMiddleware, createNote);
 router.put('/:id', authMiddleware, updateNote);
-router.put('/:id', authMiddleware, likeNote)
+router.post('/like/:id', authMiddleware, likeNote)
 router.delete('/:id', authMiddleware, deleteNote);
 
 export default router;

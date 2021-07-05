@@ -13,15 +13,17 @@ export const getNotes = async (req, res) => {
 
 export const createNote = async (req, res) => {
 
-   const { title, message, creator, selectedFile, tags } = req.body;
+   const { title, message, creatorName, selectedFile, tags } = req.body;
 
-   if (!title || !message || !creator || !selectedFile ) return res.status(400).json({ "ok": false, 'msg': 'required fields are missing' })
-   if (title === '' || message === '' || creator === '' || selectedFile === '') return res.status(400).json({ "ok": false, 'msg': 'empty fields were sent' })
+   if (!title || !message || !creatorName || !selectedFile ) return res.status(400).json({ "ok": false, 'msg': 'required fields are missing' })
+   if (title === '' || message === '' || creatorName === '' || selectedFile === '') return res.status(400).json({ "ok": false, 'msg': 'empty fields were sent' })
    
-  try {
-    const newNote = new TravelNote(req.body);
-    await newNote.save();
-    return res.status(201).json({ok: true, note: newNote});
+   
+   try {
+      const newNote = new TravelNote(req.body);
+      newNote.creatorId = req.userLogged.id;
+      await newNote.save();
+      return res.status(201).json({ok: true, note: newNote});
      
    } catch (error) {
        return res.status(409).json({ok: false, msg:'error to create note', error: error.message });
@@ -31,19 +33,20 @@ export const createNote = async (req, res) => {
 export const updateNote = async (req, res) => {
 
    const { id } = req.params;
-   const { title, message, creator, selectedFile, tags } = req.body;
-    
-   //if (!mongoose.Types.ObjectId.isValid(id)) return res.status(404).json({ ok: false, msg: 'Id not valid' });
-
-   if (!title || !message || !creator || !selectedFile ) return res.status(400).json({ "ok": false, 'msg': 'required fields are missing' })
-   if (title === '' || message === '' || creator === '' || selectedFile === '') return res.status(400).json({ "ok": false, 'msg': 'empty fields were sent' })
+   const { title, message, creatorName, selectedFile, tags } = req.body;
    
-   const newNote = { creator, title, message, tags, selectedFile, _id: id };
+   if (!title || !message || !creatorName || !selectedFile ) return res.status(400).json({ "ok": false, 'msg': 'required fields are missing' })
+   if (title === '' || message === '' || creatorName === '' || selectedFile === '') return res.status(400).json({ "ok": false, 'msg': 'empty fields were sent' })
+   
+   const newNote = { creatorName, title, message, tags, selectedFile, _id: id };
    try {
       // check if the note exists
       let note = await TravelNote.findById(id)
       if (!note) return res.status(404).json({ "ok": false, "msg": "note not found" })
       
+      // check that the creator of the note is the same person who is authenticated
+      if(req.userLogged.id !== note.creatorId.toString()) return res.status(401).json({"ok": false, "msg": "Unathorized operation"})
+
       // update Note
       await TravelNote.findByIdAndUpdate(id, newNote, { new: true });
       return res.status(201).json({ok: true, note: newNote});
@@ -58,28 +61,29 @@ export const updateNote = async (req, res) => {
 export const likeNote = async (req, res) => {
 
    const { id } = req.params;
-   
-   if (!mongoose.Types.ObjectId.isValid(id)) return res.status(404).json({ ok: false, msg: 'Id not valid' });
-   if (!req.userLogger._id) return res.status(404).json({ ok: false, msg: "Unauthorized" });
+   if (!req.userLogged.id) return res.status(404).json({ ok: false, msg: "Unauthorized" });
    
    try {
       // check if the note exists
       let note = await TravelNote.findById(id)
       if (!note) return res.status(404).json({ "ok": false, "msg": "note not found" })
-      
-      // check like logic
-      const index = note.likes.findIndex((id) => id === String(req.userLogger._id));
+
+      /**
+       * find the userId into likes array, if not exists, can be like the note
+       * else, dislike the note
+       *  */ 
+      const index = note.likes.findIndex((id) => id === String(req.userLogged.id));
       if (index === -1) {
          // like the note
-         note.likes.push(req.userLogger._id)
+         note.likes.push(req.userLogged.id)
       } else {
-         // dislike a post
-         note.likes = note.likes.filter((id) => id !== String(req.userLogger._id))
+         // dislike a note
+         note.likes = note.likes.filter((id) => id !== String(req.userLogged.id))
       }
 
-      // update Note
-      await TravelNote.findByIdAndUpdate(id, note, { new: true });
-      return res.status(201).json({ok: true, msg: "liked"});
+      // update the note finally
+      const updatedNote = await TravelNote.findByIdAndUpdate(id, note, { new: true });
+      return res.status(201).json({ok: true, msg: "liked", note: updatedNote });
      
    } catch (error) {
       console.log("entra al error");
@@ -92,12 +96,14 @@ export const likeNote = async (req, res) => {
 export const deleteNote = async (req, res) => {
    const { id } = req.params;
 
-   if (!mongoose.Types.ObjectId.isValid(id)) return res.status(404).json({ok: false, msg:'Id not valid' });
-
+   if (!mongoose.Types.ObjectId.isValid(id)) return res.status(404).json({ ok: false, msg: 'Id not valid' });
    try {
       // check if the note exists
       let note = await TravelNote.findById(id)
       if (!note) return res.status(404).json({ "ok": false, "msg": "note not found" })
+
+      // check that the creator of the note is the same person who is authenticated
+      if(req.userLogged.id !== note.creatorId.toString()) return res.status(401).json({"ok": false, "msg": "Unathorized operation"})
       
       await TravelNote.findByIdAndRemove(id);
       return res.status(201).json({ ok: true, msg: "note has been deleted successfully" });

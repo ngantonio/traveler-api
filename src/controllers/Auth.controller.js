@@ -32,6 +32,7 @@ export const login = async (req, res) => {
       if (error) throw error;
       // porque el front necesita name en lugar de firstName, por googleAuth
       let userSend = {
+        "_id": userExist._id,
         "name": userExist.firstName,
         "lastName": userExist.lastName,
         "email": userExist.email,
@@ -82,6 +83,7 @@ export const register = async (req, res) => {
 
       // porque el front necesita name en lugar de firstName, por googleAuth
       let userSend = {
+        "_id": userExist._id,
         "name": newUser.firstName,
         "lastName": newUser.lastName,
         "email": newUser.email,
