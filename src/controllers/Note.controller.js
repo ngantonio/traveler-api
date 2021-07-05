@@ -2,13 +2,21 @@ import mongoose  from 'mongoose';
 import TravelNote from '../models/TravelNote.model.js'
 
 export const getNotes = async (req, res) => {
-  try {
-    const travelNotes = await TravelNote.find();
-    return res.status(200).json({ok: true, notes: travelNotes});
-     
+   const { page } = req.query;
+   console.log("recibida");
+
+   if (!page) page = 1;
+   try {
+      const LIMIT = 4;
+      const startIndex = (Number(page) - 1) * LIMIT; // get the starting index of every page
+
+      const totalDocuments = await TravelNote.countDocuments({});
+      const travelNotes = await TravelNote.find().sort({ _id: -1 }).limit(LIMIT).skip(startIndex);
+      return res.json({ ok: true, notes: travelNotes, currentPage: Number(page), numberOfPages: Math.ceil(totalDocuments / LIMIT) });
    } catch (error) {
       return res.status(404).json({ok: true, msg:'notes not found', error: error.message });
-   }
+  }
+   
 };
 
 export const createNote = async (req, res) => {
@@ -112,3 +120,32 @@ export const deleteNote = async (req, res) => {
       return res.status(409).json({ ok: false, msg: 'error to delete note', error: error.message });
    }
 };
+ 
+
+export const getNotesByQuery = async (req, res) => {
+
+   const { query, tags } = req.query;
+   console.log(req.query);
+   try {
+      // Reg exp para permitir las coincidencias por subString
+      const title = new RegExp(query, "i");
+
+      // Busqueda solo por tags
+      if (query === "none" && tags !== '') {
+         const notes = await TravelNote.find({ tags: { $in: tags.split(',') } });
+         return res.status(201).json({ ok: true, data: notes });
+      }
+      // Busqueda solo por titulo
+      if (tags === '') {
+         const notes = await TravelNote.find({ title });
+         return res.status(201).json({ ok: true, data: notes });
+      }
+      // si no entro en los casos anteriores, la busqueda es para titulo y tags
+      const notes = await TravelNote.find({ $or: [ { title }, { tags: { $in: tags.split(',') } } ]});  
+      return res.status(201).json({ ok: true, data: notes });
+       
+   } catch (error) {
+      return res.status(404).json({ ok: false, msg: 'error to fetching notes', error: error.message });
+    }
+};
+
