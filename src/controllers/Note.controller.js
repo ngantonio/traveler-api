@@ -16,8 +16,20 @@ export const getNotes = async (req, res) => {
    } catch (error) {
       return res.status(404).json({ok: true, msg:'notes not found', error: error.message });
   }
-   
 };
+
+export const getNoteById = async (req, res) => { 
+   const { id } = req.params;
+   try {
+      // check if the note exists
+      let note = await TravelNote.findById(id)
+      if (!note) return res.status(404).json({ "ok": false, "msg": "note not found" })
+      return res.json({ ok: true, note});
+    } catch (error) {
+      return res.status(404).json({ok: true, msg:'note not found', error: error.message });
+    }
+}
+
 
 export const createNote = async (req, res) => {
 
