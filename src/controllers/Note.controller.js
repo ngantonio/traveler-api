@@ -7,7 +7,7 @@ export const getNotes = async (req, res) => {
 
    if (!page) page = 1;
    try {
-      const LIMIT = 4;
+      const LIMIT = 8;
       const startIndex = (Number(page) - 1) * LIMIT; // get the starting index of every page
 
       const totalDocuments = await TravelNote.countDocuments({});
