@@ -1,9 +1,10 @@
 import express from "express"
 const router = express.Router();
 
-import { getNotes, createNote, updateNote, likeNote, deleteNote, getNotesByQuery, getNoteById } from '../controllers/Note.controller.js'
+import { getNotes, createNote, updateNote, likeNote, deleteNote, getNotesByQuery, getNoteById, addComment } from '../controllers/Note.controller.js'
 import authMiddleware from '../middlewares/auth.js'
 
+router.post('/:id/comment',authMiddleware, addComment);
 router.get('/search', getNotesByQuery);
 router.get('/', getNotes);
 router.get('/:id', getNoteById);

@@ -8,8 +8,9 @@ const travelNoteSchema = mongoose.Schema({
   tags: { type: [String]},
   selectedFile: { type: String, required: true, trim: true },
   likes: { type: [String], default: [] },
+  comments: { type: [String], default: [] },
   place: { type: String, trim: true },
-  created_at: { type: Date },
+  created_at: { type: Date, default: new Date()},
   updated_at: { type: Date, default: new Date()}
 })
 

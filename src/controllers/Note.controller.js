@@ -161,3 +161,26 @@ export const getNotesByQuery = async (req, res) => {
     }
 };
 
+
+export const addComment = async (req, res) => {
+
+   const { id } = req.params;
+   const { value } = req.body;
+
+   if (!value) return res.status(404).json({ "ok": false, "msg": "The comment object is required" })
+
+   try {
+      let note = await TravelNote.findById(id)
+      if (!note) return res.status(404).json({ "ok": false, "msg": "note not found" })
+
+      // add new comment
+      note.comments.push(value);
+      const updatedNote = await TravelNote.findByIdAndUpdate(id, note, { new: true })
+      
+      return res.status(201).json({ ok: true, note: updatedNote });
+
+   } catch (error) {
+      
+   }
+
+}
