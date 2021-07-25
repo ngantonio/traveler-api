@@ -2,6 +2,13 @@ import UserModel from '../models/User.model.js'
 import jwt from 'jsonwebtoken'
 import bcryptjs from 'bcryptjs'
 
+
+const generateAuthToken = (payload) => {
+  return jwt.sign(payload, process.env.SECRET_KEY, { expiresIn: "1h" })
+};
+
+
+
 export const login = async (req, res) => {
 
   const { email, password } = req.body;
@@ -26,20 +33,15 @@ export const login = async (req, res) => {
       }
     };
 
-    jwt.sign(payload, process.env.SECRET_KEY, {
-      expiresIn: "1h", // expires in 1hour  
-    },(error, token)=> {
-      if (error) throw error;
-      // porque el front necesita name en lugar de firstName, por googleAuth
-      let userSend = {
+    const token = generateAuthToken(payload)
+     let userSend = {
         "_id": userExist._id,
         "name": userExist.firstName,
         "lastName": userExist.lastName,
         "email": userExist.email,
         "created_at": userExist.created_at
-      }
-      return res.status(200).json({"ok": true, "result": userSend, token})
-    })
+     }
+    return res.status(200).json({"ok": true, "result": userSend, token})
 
   } catch (error) {
     return res.status(400).json({"ok": false, error})
@@ -57,7 +59,7 @@ export const register = async (req, res) => {
   try {
     // validate if user not exist
     let userExist = await UserModel.findOne({ email })
-    if (userExist) return res.status(400).json({"ok": false, "msg":`user already exists with this email`})
+    if (userExist) return res.status(400).json({ "ok": false, "msg": `user already exists with this email` })
     
     // create user 
     let newUser = new UserModel(req.body);
@@ -67,7 +69,7 @@ export const register = async (req, res) => {
   
     // save user
     await newUser.save();
-
+    
     // create and sign JWT
     const payload = {
       user: {
@@ -75,25 +77,19 @@ export const register = async (req, res) => {
         email: newUser.email
       }
     };
+    const token = generateAuthToken(payload)
 
-    jwt.sign(payload, process.env.SECRET_KEY, {
-      expiresIn: "1h", // expires in 1hour  
-    },(error, token)=> {
-      if (error) throw error;
-
-      // porque el front necesita name en lugar de firstName, por googleAuth
-      let userSend = {
-        "_id": userExist._id,
+    let userSend = {
+        "_id": newUser._id,
         "name": newUser.firstName,
         "lastName": newUser.lastName,
         "email": newUser.email,
         "created_at": newUser.created_at
       }
-      return res.status(200).json({"ok": true, "result": userSend, token})
-    })
-
+    return res.status(200).json({"ok": true, "result": userSend, token})
     
   } catch (error) {
+    console.log(error);
     res.status(400).json({"ok": false, error})
   }
 }

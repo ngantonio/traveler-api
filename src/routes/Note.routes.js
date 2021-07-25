@@ -6,7 +6,7 @@ import authMiddleware from '../middlewares/auth.js'
 
 router.post('/:id/comment',authMiddleware, addComment);
 router.get('/search', getNotesByQuery);
-router.get('/', getNotes);
+router.get('/',authMiddleware, getNotes);
 router.get('/:id', getNoteById);
 router.post('/', authMiddleware, createNote);
 router.put('/:id', authMiddleware, updateNote);

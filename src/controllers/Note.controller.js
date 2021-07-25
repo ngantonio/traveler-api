@@ -3,8 +3,6 @@ import TravelNote from '../models/TravelNote.model.js'
 
 export const getNotes = async (req, res) => {
    const { page } = req.query;
-   console.log("recibida");
-
    if (!page) page = 1;
    try {
       const LIMIT = 8;
@@ -42,6 +40,8 @@ export const createNote = async (req, res) => {
    try {
       const newNote = new TravelNote(req.body);
       newNote.creatorId = req.userLogged.id;
+
+      // save new note
       await newNote.save();
       return res.status(201).json({ok: true, note: newNote});
      
@@ -53,26 +53,25 @@ export const createNote = async (req, res) => {
 export const updateNote = async (req, res) => {
 
    const { id } = req.params;
-   const { title, message, creatorName, selectedFile, tags } = req.body;
+   const { title, message, creatorName, selectedFile, tags, likes, updated_at } = req.body;
    
    if (!title || !message || !creatorName || !selectedFile ) return res.status(400).json({ "ok": false, 'msg': 'required fields are missing' })
    if (title === '' || message === '' || creatorName === '' || selectedFile === '') return res.status(400).json({ "ok": false, 'msg': 'empty fields were sent' })
    
-   const newNote = { creatorName, title, message, tags, selectedFile, _id: id };
+   const newNote = { creatorName, title, message, tags, selectedFile, _id: id, likes, updated_at };
    try {
       // check if the note exists
       let note = await TravelNote.findById(id)
       if (!note) return res.status(404).json({ "ok": false, "msg": "note not found" })
       
       // check that the creator of the note is the same person who is authenticated
-      if(req.userLogged.id !== note.creatorId.toString()) return res.status(401).json({"ok": false, "msg": "Unathorized operation"})
+      if(req.userLogged.id !== note.creatorId) return res.status(401).json({"ok": false, "msg": "Unathorized operation"})
 
       // update Note
       await TravelNote.findByIdAndUpdate(id, newNote, { new: true });
       return res.status(201).json({ok: true, note: newNote});
      
    } catch (error) {
-      console.log("entra al error");
       console.log(error);
       return res.status(409).json({ ok: false, msg: 'error to update note', error: error.message });
    }
@@ -106,7 +105,6 @@ export const likeNote = async (req, res) => {
       return res.status(201).json({ok: true, msg: "liked", note: updatedNote });
      
    } catch (error) {
-      console.log("entra al error");
       console.log(error);
       return res.status(409).json({ ok: false, msg: 'error to update note', error: error.message });
    }

@@ -4,7 +4,7 @@ const travelNoteSchema = mongoose.Schema({
   title: { type: String, required: true, trim: true },
   message: { type: String, required: true, trim: true },
   creatorName: { type: String, trim: true },
-  creatorId: { type: mongoose.Schema.Types.ObjectId, ref:'User' },
+  creatorId: { type: String, required: true, trim: true},
   tags: { type: [String]},
   selectedFile: { type: String, required: true, trim: true },
   likes: { type: [String], default: [] },
